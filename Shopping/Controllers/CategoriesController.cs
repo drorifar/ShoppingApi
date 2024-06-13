@@ -31,6 +31,7 @@ namespace Shopping.Controllers
         public ActionResult<CategoryDTO> GetCategory(int id)
         {
             // throw new Exception("ex ex ex");
+
             try
             {
 

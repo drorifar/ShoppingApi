@@ -1,5 +1,6 @@
 
 using Microsoft.AspNetCore.StaticFiles;
+using Serilog;
 
 namespace Shopping
 {
@@ -8,6 +9,16 @@ namespace Shopping
         public static void Main(string[] args)
         {
             var builder = WebApplication.CreateBuilder(args);
+
+            Log.Logger = new LoggerConfiguration()
+                .MinimumLevel.Debug()
+#if DEBUG
+                .WriteTo.Console()
+#endif
+                .WriteTo.File("logs/mylog.txt", rollingInterval: RollingInterval.Minute) //write to file and create new file every minutes
+                .CreateLogger(); //create the serilog configuration (we can do it with the appsetting)
+
+            builder.Host.UseSerilog(); //add the serilog to injuction
 
             // Add services to the container.
 

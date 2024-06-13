@@ -2,6 +2,7 @@
 using Microsoft.AspNetCore.JsonPatch;
 using Microsoft.AspNetCore.Mvc;
 using Shopping.Models;
+using Shopping.services;
 using System.Net.WebSockets;
 using System.Security.Cryptography.X509Certificates;
 
@@ -12,10 +13,12 @@ namespace Shopping.Controllers
     public class ProductsController : ControllerBase
     {
         private ILogger<ProductsController> _logger;
+        private IMailService _mailService;
 
-        public ProductsController(ILogger<ProductsController> logger)
+        public ProductsController(ILogger<ProductsController> logger, IMailService mailService)
         {
-                _logger = logger ?? throw new ArgumentNullException(nameof(logger));
+            _logger = logger ?? throw new ArgumentNullException(nameof(logger));
+            _mailService = mailService ?? throw new ArgumentNullException(nameof(mailService)); 
 
             //var log = HttpContext.RequestServices.GetService(typeof(ILogger<ProductsController>)); // anothe way to use the services without the DI (if not availible)            
         }
@@ -28,6 +31,7 @@ namespace Shopping.Controllers
             if (products == null)
             {
                 _logger.LogWarning($"No category with id: {categoryID}");
+                _mailService.send("Get Products", $"no category found: {categoryID}");
                 return NotFound();
             }
 

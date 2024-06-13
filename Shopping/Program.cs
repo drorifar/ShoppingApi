@@ -1,6 +1,7 @@
 
 using Microsoft.AspNetCore.StaticFiles;
 using Serilog;
+using Shopping.services;
 
 namespace Shopping
 {
@@ -11,11 +12,11 @@ namespace Shopping
             var builder = WebApplication.CreateBuilder(args);
 
             Log.Logger = new LoggerConfiguration()
-                .MinimumLevel.Debug()
+                .MinimumLevel.Warning()
 #if DEBUG
                 .WriteTo.Console()
 #endif
-                .WriteTo.File("logs/mylog.txt", rollingInterval: RollingInterval.Minute) //write to file and create new file every minutes
+                .WriteTo.File("logs/mylog.txt", rollingInterval: RollingInterval.Day) //write to file and create new file every day
                 .CreateLogger(); //create the serilog configuration (we can do it with the appsetting)
 
             builder.Host.UseSerilog(); //add the serilog to injuction
@@ -46,6 +47,12 @@ namespace Shopping
 
 
             builder.Services.AddSingleton<FileExtensionContentTypeProvider>(); //add a singletone service for fileType auto detect
+
+#if DEBUG
+            builder.Services.AddTransient<IMailService, LocalMailService>(); //add the mail service we created to the dependency injection flow  
+#else
+            builder.Services.AddTransient<IMailService, ProductionMailService>(); //add the mail service we created to the dependency injection flow  
+#endif
 
             var app = builder.Build();
 

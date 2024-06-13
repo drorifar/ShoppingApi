@@ -1,12 +1,13 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using Shopping.Models;
+using Shopping.services;
 using System.Reflection.Metadata.Ecma335;
 
 namespace Shopping.Controllers
 {
     [ApiController]
     [Route("api/categories")]
-    public class CategoriesController(ILogger<CategoriesController> _logger) : ControllerBase //default constructor in the class name. usefull when using DependencyInjecyion (new feature in C#)
+    public class CategoriesController(ILogger<CategoriesController> _logger, IMailService _mailService) : ControllerBase //default constructor in the class name. usefull when using DependencyInjecyion (new feature in C#)
     {
 
         /// <summary>
@@ -40,6 +41,7 @@ namespace Shopping.Controllers
                 if (result == null)
                 {
                     _logger.LogWarning($"no category found: {id}");
+                    _mailService.send("Missing category", $"no category found: {id}");
                     return NotFound();
                 }
 
@@ -47,8 +49,7 @@ namespace Shopping.Controllers
             }
             catch (Exception ex)
             {
-                _logger.LogCritical($"Exception while calling getCategories {id}", ex);
-
+                _logger.LogCritical($"Exception while calling getCategories {id}", ex);                
                 return StatusCode(500, $"Exception while calling getCategories {id}");
             }
         }

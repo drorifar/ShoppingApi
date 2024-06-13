@@ -2,9 +2,9 @@
 
 namespace Shopping.Models
 {
-    public class ProductForCreationDTO
+    public class ProductForUpdateDTO
     {
-        [Required(ErrorMessage = "Name is required for creation")]
+        [Required (ErrorMessage ="Name is required for update")]
         [MaxLength(100)]
         public string Name { get; set; }
 

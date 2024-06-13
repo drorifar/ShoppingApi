@@ -14,7 +14,9 @@ namespace Shopping
             builder.Services.AddControllers(options =>
             {                
                 options.ReturnHttpNotAcceptable = true;
-            }).AddXmlDataContractSerializerFormatters(); // we add the optioms to get the response ad XML (for legacy programs)
+            })
+                .AddNewtonsoftJson()
+                .AddXmlDataContractSerializerFormatters(); // we add the option to get the response as XML (for legacy programs)
 
             // we add a costume problem details that will add to the problem message (401,500...)
             builder.Services.AddProblemDetails(options =>

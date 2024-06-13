@@ -1,5 +1,8 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Components.Forms;
+using Microsoft.AspNetCore.JsonPatch;
+using Microsoft.AspNetCore.Mvc;
 using Shopping.Models;
+using System.Net.WebSockets;
 
 namespace Shopping.Controllers
 {
@@ -73,6 +76,106 @@ namespace Shopping.Controllers
             return BadRequest();
 
             
+        }
+
+        [HttpPut("{productId}")]
+        public ActionResult UpdateProduct(int categoryID, int productId, ProductForUpdateDTO productToUpdate)
+        {
+            var category = MyDataStore.Current.Categories.FirstOrDefault(c => c.ID == categoryID);
+
+            if (category == null)
+            {
+                return NotFound("category not found");
+            }
+            var product = category.Products.FirstOrDefault(p => p.ID == productId);
+
+            if (product == null)
+            {
+                return NotFound("product not found");
+            }
+
+            if (productToUpdate != null)
+            {
+                product.Name = productToUpdate.Name;
+                product.Description = productToUpdate.Description;
+
+
+                return NoContent(); // for return success with no object to return
+                // return Ok(product); -- there is no reason for returning the same object that the client send us
+            }
+            else
+            {
+                return BadRequest();
+            }
+
+        }
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="categoryID"></param>
+        /// <param name="productId"></param>
+        /// <param name="patchDocument">
+        /// for example:
+        /// [  
+        ////    {
+        ////    "op": "replace",
+        ////    "path": "/Name",    
+        ////    "value": "Patched  "
+        ////  }, 
+        ////     {
+        ////    "op": "remove",
+        ////    "path": "/Description"
+        ////  }
+        ////]
+        /// </param>
+        /// <returns></returns>
+
+        [HttpPatch("{productId}")]
+        public ActionResult PatchProduct(int categoryID, int productId, JsonPatchDocument<ProductForUpdateDTO> patchDocument)
+        {
+            var category = MyDataStore.Current.Categories.FirstOrDefault(c => c.ID == categoryID);
+
+            if (category == null)
+            {
+                return NotFound("category not found");
+            }
+            var product = category.Products.FirstOrDefault(p => p.ID == productId);
+
+            if (product == null)
+            {
+                return NotFound("product not found");
+            }
+
+
+            // we create temp object for patching (because we get from the client a slim object (productForUpdate))
+            var productToUpdate = new ProductForUpdateDTO()
+            {
+                Name = product.Name,
+                Description = product.Description
+            };
+
+            //running the patch command that we get from the client - updating the productToUpdate from the patchDocument values from the client
+            // ModelState - the object from ControllerBase that checks the validation of the given object
+            patchDocument.ApplyTo(productToUpdate, ModelState);
+
+            //check that the fields for update in the patchDocument are valid
+            if (!ModelState.IsValid)
+            {
+                return BadRequest(ModelState);
+            }
+
+            //now we run the validation attrivute on the products to update
+            if (!TryValidateModel(productToUpdate))
+            {
+                return BadRequest(ModelState);
+            }
+
+            // when the two checks complete succesfully we update our DB
+            product.Name = productToUpdate.Name;
+            product.Description = productToUpdate.Description; 
+
+            return NoContent();
         }
     }
 }

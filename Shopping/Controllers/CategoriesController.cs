@@ -21,8 +21,6 @@ namespace Shopping.Controllers
         //}
 
 
-
-
         [HttpGet]
         public ActionResult<IEnumerable<CategoryDTO>> GetCategories()
         {           
@@ -32,15 +30,26 @@ namespace Shopping.Controllers
         [HttpGet("{id}")]
         public ActionResult<CategoryDTO> GetCategory(int id)
         {
-            var result = MyDataStore.Current.Categories.FirstOrDefault(c => c.ID == id);
-
-            if (result == null)
+            // throw new Exception("ex ex ex");
+            try
             {
-                _logger.LogWarning($"no category found: {id}");
-                return NotFound();
+
+                var result = MyDataStore.Current.Categories.FirstOrDefault(c => c.ID == id);
+
+                if (result == null)
+                {
+                    _logger.LogWarning($"no category found: {id}");
+                    return NotFound();
+                }
+
+                return Ok(result);
             }
-            
-            return Ok(result);
+            catch (Exception ex)
+            {
+                _logger.LogCritical($"Exception while calling getCategories {id}", ex);
+
+                return StatusCode(500, $"Exception while calling getCategories {id}");
+            }
         }
 
         //[HttpGet("getCat")]

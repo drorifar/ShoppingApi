@@ -177,5 +177,26 @@ namespace Shopping.Controllers
 
             return NoContent();
         }
+
+        [HttpDelete("{productId}")]
+        public ActionResult DeleteProduct(int categoryID, int productId)
+        {
+            var category = MyDataStore.Current.Categories.FirstOrDefault(c => c.ID == categoryID);
+
+            if (category == null)
+            {
+                return NotFound("category not found");
+            }
+            var product = category.Products.FirstOrDefault(p => p.ID == productId);
+
+            if (product == null)
+            {
+                return NotFound("product not found");
+            }
+
+            category.Products.Remove(product);
+
+            return Ok("Deleted item");
+        }
     }
 }

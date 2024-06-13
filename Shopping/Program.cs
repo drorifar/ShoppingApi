@@ -15,7 +15,7 @@ namespace Shopping
             {                
                 options.ReturnHttpNotAcceptable = true;
             })
-                .AddNewtonsoftJson()
+                .AddNewtonsoftJson() // we add the newtonSoft json for workinf with the jsonPatch
                 .AddXmlDataContractSerializerFormatters(); // we add the option to get the response as XML (for legacy programs)
 
             // we add a costume problem details that will add to the problem message (401,500...)

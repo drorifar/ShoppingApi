@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.JsonPatch;
 using Microsoft.AspNetCore.Mvc;
 using Shopping.Models;
 using System.Net.WebSockets;
+using System.Security.Cryptography.X509Certificates;
 
 namespace Shopping.Controllers
 {
@@ -10,13 +11,23 @@ namespace Shopping.Controllers
     [Route("api/categories/{categoryID}/products")]
     public class ProductsController : ControllerBase
     {
+        private ILogger<ProductsController> _logger;
+
+        public ProductsController(ILogger<ProductsController> logger)
+        {
+                _logger = logger ?? throw new ArgumentNullException(nameof(logger));
+
+            //var log = HttpContext.RequestServices.GetService(typeof(ILogger<ProductsController>)); // anothe way to use the services without the DI (if not availible)            
+        }
+
         [HttpGet]
         public ActionResult<IEnumerable<ProductDTO>> GetProducts(int categoryID)
-        {
+        {            
             var products = MyDataStore.Current.Categories.FirstOrDefault(c => c.ID == categoryID)?.Products;
 
             if (products == null)
             {
+                _logger.LogWarning($"No category with id: {categoryID}");
                 return NotFound();
             }
 
@@ -133,7 +144,8 @@ namespace Shopping.Controllers
 
         [HttpPatch("{productId}")]
         public ActionResult PatchProduct(int categoryID, int productId, JsonPatchDocument<ProductForUpdateDTO> patchDocument)
-        {
+        {         
+
             var category = MyDataStore.Current.Categories.FirstOrDefault(c => c.ID == categoryID);
 
             if (category == null)

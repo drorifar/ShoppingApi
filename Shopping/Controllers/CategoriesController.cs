@@ -6,24 +6,22 @@ namespace Shopping.Controllers
 {
     [ApiController]
     [Route("api/categories")]
-    public class CategoriesController : ControllerBase
+    public class CategoriesController(ILogger<CategoriesController> _logger) : ControllerBase //default constructor in the class name. usefull when using DependencyInjecyion (new feature in C#)
     {
 
- 
-        //[HttpGet("getCat")]
-        //public JsonResult GetCategories()
+        /// <summary>
+        /// replace all this code with the ctor in the class name
+        /// </summary>
+        /// <returns></returns>
+        //private ILogger<CategoriesController> _logger;
+
+        //public CategoriesController(ILogger<CategoriesController> logger)
         //{
-        //    //return new JsonResult(new List<object>() {
-        //    //new {
-        //    //    Name = "cat 1",
-        //    //    Id = 1
-        //    //},
-        //    //new  {
-        //    //    Name = "cat 2",
-        //    //    Id = 2
-        //    //},
-        //    //});
+        //    _logger = logger ?? throw new ArgumentNullException(nameof(logger));
         //}
+
+
+
 
         [HttpGet]
         public ActionResult<IEnumerable<CategoryDTO>> GetCategories()
@@ -38,10 +36,26 @@ namespace Shopping.Controllers
 
             if (result == null)
             {
+                _logger.LogWarning($"no category found: {id}");
                 return NotFound();
             }
             
             return Ok(result);
         }
+
+        //[HttpGet("getCat")]
+        //public JsonResult GetCategories()
+        //{
+        //    //return new JsonResult(new List<object>() {
+        //    //new {
+        //    //    Name = "cat 1",
+        //    //    Id = 1
+        //    //},
+        //    //new  {
+        //    //    Name = "cat 2",
+        //    //    Id = 2
+        //    //},
+        //    //});
+        //}
     }
 }

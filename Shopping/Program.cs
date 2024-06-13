@@ -1,6 +1,7 @@
 
 using Microsoft.AspNetCore.StaticFiles;
 using Serilog;
+using Shopping.Context;
 using Shopping.services;
 
 namespace Shopping
@@ -51,8 +52,10 @@ namespace Shopping
 #if DEBUG
             builder.Services.AddTransient<IMailService, LocalMailService>(); //add the mail service we created to the dependency injection flow  
 #else
-            builder.Services.AddTransient<IMailService, ProductionMailService>(); //add the mail service we created to the dependency injection flow  
+            builder.Services.AddTransient<IMailService, ProductionMailService>(); //add the production mail service we created to the dependency injection flow  
 #endif
+
+            builder.Services.AddDbContext<MyDBContext>();
 
             var app = builder.Build();
 

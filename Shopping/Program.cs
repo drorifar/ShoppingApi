@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.StaticFiles;
 using Microsoft.EntityFrameworkCore;
 using Serilog;
 using Shopping.Context;
+using Shopping.Repositories;
 using Shopping.services;
 
 namespace Shopping
@@ -26,7 +27,7 @@ namespace Shopping
             // Add services to the container.
 
             builder.Services.AddControllers(options =>
-            {                
+            {
                 options.ReturnHttpNotAcceptable = true;
             })
                 .AddNewtonsoftJson() // we add the newtonSoft json for workinf with the jsonPatch
@@ -56,10 +57,22 @@ namespace Shopping
             builder.Services.AddTransient<IMailService, ProductionMailService>(); //add the production mail service we created to the dependency injection flow  
 #endif
 
-            builder.Services.AddDbContext<MyDBContext>(options =>            
-            options.UseSqlite("Data Source=MyShop.db"));// add the DBContext to the injection flow + call to it constructor (base ctor) with the configuration
+            builder.Services.AddDbContext<MyDBContext>(options =>
+            options.UseSqlite(builder.Configuration["ConnectionString:Main"])); // add the DBContext to the injection flow + call to it constructor (base ctor) with the configuration
+            //.UseSqlite("Data Source=MyShop.db"));
+
+            builder.Services.AddScoped<ICategoryRepository, CategoryRepository>(); //add the repository to the injection engine (scope)
+            builder.Services.AddScoped<IProductRepository, ProductRepository>();
+
+            builder.Services.AddAutoMapper(AppDomain.CurrentDomain.GetAssemblies()); // add the automap to the injection engine, get the assembly of the object for the reflection. here we send the current assembly
 
             var app = builder.Build();
+
+            using (var scope = app.Services.CreateScope())
+            {
+                var context = scope.ServiceProvider.GetRequiredService<MyDBContext>(); //get the injection manualy 
+                context.Database.Migrate();
+            }
 
             if (!app.Environment.IsDevelopment())
             {

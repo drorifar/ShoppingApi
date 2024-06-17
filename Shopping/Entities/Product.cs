@@ -15,6 +15,13 @@ namespace Shopping.Entities
 
         [MaxLength(200)]
         public string? Description { get; set; }
+
+        //[ForeignKey("CategoryID")] // we dont need to add it because E.FW doing it automaticlly
+        public Category? Category { get; set; }
+
+        public int CategoryID { get; set; }
+
+        public float Price { get; set; }
     }
 
 }

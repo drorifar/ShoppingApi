@@ -1,5 +1,6 @@
 
 using Microsoft.AspNetCore.StaticFiles;
+using Microsoft.EntityFrameworkCore;
 using Serilog;
 using Shopping.Context;
 using Shopping.services;
@@ -55,7 +56,8 @@ namespace Shopping
             builder.Services.AddTransient<IMailService, ProductionMailService>(); //add the production mail service we created to the dependency injection flow  
 #endif
 
-            builder.Services.AddDbContext<MyDBContext>();
+            builder.Services.AddDbContext<MyDBContext>(options =>            
+            options.UseSqlite("Data Source=MyShop.db"));// add the DBContext to the injection flow + call to it constructor (base ctor) with the configuration
 
             var app = builder.Build();
 

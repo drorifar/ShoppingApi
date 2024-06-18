@@ -3,8 +3,8 @@ using Microsoft.AspNetCore.Components.Forms;
 using Microsoft.AspNetCore.JsonPatch;
 using Microsoft.AspNetCore.Mvc;
 using Shopping.Context;
-using Shopping.Entities;
 using Shopping.Models;
+using Shopping.Models.Entities;
 using Shopping.Repositories;
 using Shopping.services;
 using System.Net.WebSockets;
@@ -51,9 +51,16 @@ namespace Shopping.Controllers
                 return NotFound($"No category with id: {categoryID}");
             }
 
-            IEnumerable<Entities.Product> products = await _repo.GetProductForCategoryAsync(categoryID);
+            IEnumerable<Product> products = await _repo.GetProductForCategoryAsync(categoryID);
             return Ok(_mapper.Map<IEnumerable<ProductDTO>>(products));
 
+        }
+
+        [HttpGet("/api/products")] // when the url start with "/" than its start from the root anf not from the controller api
+        public async Task<ActionResult<IEnumerable<ProductDTO>>> GetAllProducts([FromQuery]string? name, string? query) //[FromQuery] - not needed as default is from query
+        {
+            var products = await _repo.GetAllProductsAsync(name, query);
+            return Ok(_mapper.Map<IEnumerable<ProductDTO>>(products));
         }
 
         [HttpGet("productID", Name = "GetSingleProduct")]
@@ -75,7 +82,7 @@ namespace Shopping.Controllers
                 return NotFound($"No category with id: {categoryID}");
             }
 
-            Entities.Product? product = await _repo.GetProductForCategoryAsync(categoryID, productID);
+            Product? product = await _repo.GetProductForCategoryAsync(categoryID, productID);
 
             if (product == null)
             {

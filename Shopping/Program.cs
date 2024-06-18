@@ -15,7 +15,7 @@ namespace Shopping
             var builder = WebApplication.CreateBuilder(args);
 
             Log.Logger = new LoggerConfiguration()
-                .MinimumLevel.Warning()
+                .MinimumLevel.Information()
 #if DEBUG
                 .WriteTo.Console()
 #endif
@@ -68,8 +68,7 @@ namespace Shopping
 
             var app = builder.Build();
 
-            using (var scope = app.Services.CreateScope())
-            {
+            using (var scope = app.Services.CreateScope())            {
                 var context = scope.ServiceProvider.GetRequiredService<MyDBContext>(); //get the injection manualy 
                 context.Database.Migrate();
             }

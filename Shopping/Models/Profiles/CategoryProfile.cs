@@ -1,5 +1,5 @@
 ﻿using AutoMapper;
-using Shopping.Entities;
+using Shopping.Models.Entities;
 
 namespace Shopping.Models.Profiles
 {

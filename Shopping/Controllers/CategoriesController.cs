@@ -1,6 +1,7 @@
 ﻿using AutoMapper;
 using Microsoft.AspNetCore.Mvc;
 using Shopping.Models;
+using Shopping.Models.Entities;
 using Shopping.Repositories;
 using Shopping.services;
 using System.Reflection.Metadata.Ecma335;
@@ -32,7 +33,7 @@ namespace Shopping.Controllers
         {
             //return Ok(MyDataStore.Current.Categories); //before adding DB
 
-            IEnumerable<Entities.Category> categories = await _repo.GetCategoriesAsync();
+            IEnumerable<Category> categories = await _repo.GetCategoriesAsync();
 
             // changed to mapper
             //List<CategoryWithotProductDTO> results = new List<CategoryWithotProductDTO>();

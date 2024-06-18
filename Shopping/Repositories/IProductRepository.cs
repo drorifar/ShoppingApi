@@ -1,4 +1,4 @@
-﻿using Shopping.Entities;
+﻿using Shopping.Models.Entities;
 
 namespace Shopping.Repositories
 {
@@ -15,5 +15,7 @@ namespace Shopping.Repositories
         Task DeleteProduct(Product product, bool autoSave = false);
 
         Task SaveChangesAsync();
+
+        Task<IEnumerable<Product>> GetAllProductsAsync(string? name, string? query);
     }
 }

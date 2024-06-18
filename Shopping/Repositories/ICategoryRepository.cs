@@ -1,5 +1,5 @@
 ﻿using Shopping.Context;
-using Shopping.Entities;
+using Shopping.Models.Entities;
 
 namespace Shopping.Repositories
 {

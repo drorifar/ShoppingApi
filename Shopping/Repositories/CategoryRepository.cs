@@ -1,6 +1,6 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using Shopping.Context;
-using Shopping.Entities;
+using Shopping.Models.Entities;
 using SQLitePCL;
 
 namespace Shopping.Repositories

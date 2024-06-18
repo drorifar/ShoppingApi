@@ -9,6 +9,7 @@ using Shopping.Repositories;
 using Shopping.services;
 using System.Net.WebSockets;
 using System.Security.Cryptography.X509Certificates;
+using System.Text.Json;
 
 namespace Shopping.Controllers
 {
@@ -20,6 +21,7 @@ namespace Shopping.Controllers
         private IMailService _mailService;
         private IProductRepository _repo;
         private IMapper _mapper;
+        readonly int MAX_PAGE_SIZE = 10;
 
         public ProductsController(ILogger<ProductsController> logger, IMailService mailService, MyDBContext context, IProductRepository repo, IMapper mapper)
         {
@@ -57,10 +59,26 @@ namespace Shopping.Controllers
         }
 
         [HttpGet("/api/products")] // when the url start with "/" than its start from the root anf not from the controller api
-        public async Task<ActionResult<IEnumerable<ProductDTO>>> GetAllProducts([FromQuery]string? name, string? query) //[FromQuery] - not needed as default is from query
+        public async Task<ActionResult<IEnumerable<ProductDTO>>> GetAllProducts(
+            [FromQuery]string? name, //[FromQuery] - not needed as default is from query
+            string? query,
+            int pageNumber = 1,
+            int pageSize = 10) 
         {
-            var products = await _repo.GetAllProductsAsync(name, query);
-            return Ok(_mapper.Map<IEnumerable<ProductDTO>>(products));
+
+            if (pageSize > MAX_PAGE_SIZE)
+            {
+                pageSize = MAX_PAGE_SIZE;
+            }
+
+            var (results, meta) = await _repo.GetAllProductsAsync(name, query, pageNumber, pageSize);
+
+            Response.Headers.Add("X-TotalItemCount", JsonSerializer.Serialize(meta.TotalItemCount.ToString())); // add the metaData to the header
+            Response.Headers.Add("X-TotalPageCount", JsonSerializer.Serialize(meta.TotalPageCount.ToString())); // add the metaData to the header
+            Response.Headers.Add("X-PageSize", JsonSerializer.Serialize(meta.PageSize.ToString())); // add the metaData to the header
+            Response.Headers.Add("X-PageNumber", JsonSerializer.Serialize(meta.PageNumber.ToString())); // add the metaData to the header
+
+            return Ok(_mapper.Map<IEnumerable<ProductDTO>>(results));
         }
 
         [HttpGet("productID", Name = "GetSingleProduct")]

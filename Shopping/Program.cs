@@ -28,7 +28,7 @@ namespace Shopping
 
             builder.Services.AddControllers(options =>
             {
-                options.ReturnHttpNotAcceptable = true;
+                // options.ReturnHttpNotAcceptable = true; //remark cause it return an error in the swagger (need to change to application/json everytime)
             })
                 .AddNewtonsoftJson() // we add the newtonSoft json for workinf with the jsonPatch
                 .AddXmlDataContractSerializerFormatters(); // we add the option to get the response as XML (for legacy programs)

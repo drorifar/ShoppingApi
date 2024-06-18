@@ -1,4 +1,5 @@
-﻿using Shopping.Models.Entities;
+﻿using Shopping.Models;
+using Shopping.Models.Entities;
 
 namespace Shopping.Repositories
 {
@@ -16,6 +17,6 @@ namespace Shopping.Repositories
 
         Task SaveChangesAsync();
 
-        Task<IEnumerable<Product>> GetAllProductsAsync(string? name, string? query);
+        Task<(IEnumerable<Product>, PagingMetadataDTO)> GetAllProductsAsync(string? name, string? query, int pageNumber, int pageSize);
     }
 }

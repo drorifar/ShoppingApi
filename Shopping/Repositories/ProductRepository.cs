@@ -1,6 +1,8 @@
-﻿using Microsoft.AspNetCore.Http.HttpResults;
+﻿using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.EntityFrameworkCore;
 using Shopping.Context;
+using Shopping.Models;
 using Shopping.Models.Entities;
 using System.Linq;
 using System.Xml.Linq;
@@ -61,28 +63,40 @@ namespace Shopping.Repositories
             await _db.SaveChangesAsync();
         }
 
-        public async Task<IEnumerable<Product>> GetAllProductsAsync(string? name, string? query)
+        public async Task<(IEnumerable<Product>, PagingMetadataDTO)> GetAllProductsAsync(string? name, string? query, int pageNumber, int pageSize)
         {
             // we build the query according to the param (exect name or query)
 
-            IQueryable<Product> colection = _db.Products as IQueryable<Product>;
+            IQueryable<Product> collection = _db.Products as IQueryable<Product>;
 
             if (!string.IsNullOrWhiteSpace(name))
             {
                 name = name.Trim();
-                colection = colection.Where(p => p.Name == name);
+                collection = collection.Where(p => p.Name == name);
             }
 
             if (!string.IsNullOrWhiteSpace(query))
             {
                 query = query.Trim();
-                colection = colection.Where(p => p.Name.Contains(query) || (p.Description != null && p.Description.Contains(query))); 
+                collection = collection.Where(p => p.Name.Contains(query) || (p.Description != null && p.Description.Contains(query))); 
             }
 
-            colection = colection.OrderBy(p => p.Name);
+            int count = collection.Count();
 
+            PagingMetadataDTO meta = new Models.PagingMetadataDTO()
+            {
+                TotalItemCount = count,
+                PageNumber = pageNumber,
+                PageSize = pageSize
+            };
+
+            collection = collection.OrderBy(p => p.Name);
+
+            collection = collection.Skip((pageNumber - 1)*pageSize).Take(pageSize); // skip and take add the paging to the db query
+
+            var items = await collection.ToListAsync();
             //only in the end we execute the query to the DB
-            return await colection.ToListAsync();
+            return (items, meta);
         }
 
         //NOT RECOMENDED - exemple for returning the query before executions and now the controller can get excess to the DB qury

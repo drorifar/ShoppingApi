@@ -13,6 +13,7 @@ namespace Shopping.Context
 
         public DbSet<Category> Categories{ get; set; }
         public DbSet<Product> Products{ get; set; }
+        public DbSet<User> Users{ get; set; }
 
 
         // we move the configuration to the program.cs
@@ -25,6 +26,27 @@ namespace Shopping.Context
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
+            modelBuilder.Entity<User>().HasData(
+                new User()
+                {
+                    ID = 1,
+                    UserName = "user",
+                    Password = "1234",
+                    Email  = "sss@ddd.com",
+                    Name = "name name",
+                    AuthLevel = 9 // ADMIN
+                },
+                new User()
+                {
+                    ID = 2,
+                    UserName = "user2",
+                    Password = "1234",
+                    Email = "user2@ddd.com",
+                    Name = "user2 user2",
+                    AuthLevel = 2
+                }
+                );
+
             modelBuilder.Entity<Category>().HasData(
                 new Category()
                 {

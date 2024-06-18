@@ -1,4 +1,5 @@
 ﻿using AutoMapper;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Components.Forms;
 using Microsoft.AspNetCore.JsonPatch;
 using Microsoft.AspNetCore.Mvc;
@@ -14,6 +15,7 @@ using System.Text.Json;
 namespace Shopping.Controllers
 {
     [ApiController]
+    [Authorize]
     [Route("api/categories/{categoryID}/products")]
     public class ProductsController : ControllerBase
     {
@@ -71,12 +73,21 @@ namespace Shopping.Controllers
                 pageSize = MAX_PAGE_SIZE;
             }
 
+            // not the best policy implementation
+            //if (int.TryParse(User.Claims.FirstOrDefault(c => c.Type == "auth_level")?.Value, out int authLevel))
+            //{
+            //    if (authLevel != 9) // for exemple we can use the claims of the user to check for example its authenticatiom level
+            //    {
+            //        return Unauthorized();
+            //    }
+            //}
+
             var (results, meta) = await _repo.GetAllProductsAsync(name, query, pageNumber, pageSize);
 
-            Response.Headers.Add("X-TotalItemCount", JsonSerializer.Serialize(meta.TotalItemCount.ToString())); // add the metaData to the header
-            Response.Headers.Add("X-TotalPageCount", JsonSerializer.Serialize(meta.TotalPageCount.ToString())); // add the metaData to the header
-            Response.Headers.Add("X-PageSize", JsonSerializer.Serialize(meta.PageSize.ToString())); // add the metaData to the header
-            Response.Headers.Add("X-PageNumber", JsonSerializer.Serialize(meta.PageNumber.ToString())); // add the metaData to the header
+            Response.Headers.Append("X-TotalItemCount", JsonSerializer.Serialize(meta.TotalItemCount.ToString())); // add the metaData to the header
+            Response.Headers.Append("X-TotalPageCount", JsonSerializer.Serialize(meta.TotalPageCount.ToString())); // add the metaData to the header
+            Response.Headers.Append("X-PageSize", JsonSerializer.Serialize(meta.PageSize.ToString())); // add the metaData to the header
+            Response.Headers.Append("X-PageNumber", JsonSerializer.Serialize(meta.PageNumber.ToString())); // add the metaData to the header
 
             return Ok(_mapper.Map<IEnumerable<ProductDTO>>(results));
         }
@@ -332,6 +343,7 @@ namespace Shopping.Controllers
         }
 
         [HttpDelete("{productId}")]
+        [Authorize(Policy = "IsShopAdmin")] // check that the policy in the program is valid
         public async Task<ActionResult> DeleteProduct(int categoryID, int productId)
         {
             //var category = MyDataStore.Current.Categories.FirstOrDefault(c => c.ID == categoryID);

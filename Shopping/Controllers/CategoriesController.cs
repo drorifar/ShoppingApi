@@ -1,4 +1,5 @@
 ﻿using AutoMapper;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Shopping.Models;
 using Shopping.Models.Entities;
@@ -9,6 +10,7 @@ using System.Reflection.Metadata.Ecma335;
 namespace Shopping.Controllers
 {
     [ApiController]
+    [Authorize]
     [Route("api/categories")]
     public class CategoriesController(ILogger<CategoriesController> _logger, 
         IMailService _mailService,

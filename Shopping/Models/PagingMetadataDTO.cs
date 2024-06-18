@@ -4,7 +4,7 @@
     {
         public int TotalItemCount { get; set; }
 
-        public int TotalPageCount => TotalItemCount / PageSize;
+        public double TotalPageCount => Math.Ceiling(TotalItemCount / (double)PageSize);
 
         public int PageSize { get; set; }
 

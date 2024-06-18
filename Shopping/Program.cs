@@ -1,6 +1,7 @@
 
 using Microsoft.AspNetCore.StaticFiles;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.IdentityModel.Tokens;
 using Serilog;
 using Shopping.Context;
 using Shopping.Repositories;
@@ -63,12 +64,38 @@ namespace Shopping
 
             builder.Services.AddScoped<ICategoryRepository, CategoryRepository>(); //add the repository to the injection engine (scope)
             builder.Services.AddScoped<IProductRepository, ProductRepository>();
+            builder.Services.AddScoped<IUserReposetory, UserReposetory>();
 
             builder.Services.AddAutoMapper(AppDomain.CurrentDomain.GetAssemblies()); // add the automap to the injection engine, get the assembly of the object for the reflection. here we send the current assembly
 
+            builder.Services.AddAuthentication("Bearer").AddJwtBearer( //add Jwt Beare authentication 
+                o =>
+                o.TokenValidationParameters = new TokenValidationParameters
+                {
+                    //valid the issuer from the token
+                    ValidateIssuer = true,
+                    ValidIssuer = builder.Configuration["Authentication:Issuer"],
+                    //valid the Audience from the token
+                    ValidateAudience = true,
+                    ValidAudience = builder.Configuration["Authentication:Audience"],
+                    //validate that the signature is valid
+                    ValidateIssuerSigningKey = true,
+                    IssuerSigningKey = new SymmetricSecurityKey(Convert.FromBase64String(builder.Configuration["Authentication:MyKey"]))
+                });
+
+            builder.Services.AddAuthorization(o =>
+            {
+                o.AddPolicy("IsShopAdmin", policy =>
+                {
+                    policy.RequireAuthenticatedUser();
+                    policy.RequireClaim("auth_level", "9"); // check the claims wanted key and value 
+                });
+            });
+
             var app = builder.Build();
 
-            using (var scope = app.Services.CreateScope())            {
+            using (var scope = app.Services.CreateScope())
+            {
                 var context = scope.ServiceProvider.GetRequiredService<MyDBContext>(); //get the injection manualy 
                 context.Database.Migrate();
             }
@@ -87,8 +114,9 @@ namespace Shopping
 
             app.UseHttpsRedirection();
 
-            app.UseAuthorization();
+            app.UseAuthentication(); // we add this to run the authentication check that we add above
 
+            app.UseAuthorization();
 
             app.MapControllers();
 

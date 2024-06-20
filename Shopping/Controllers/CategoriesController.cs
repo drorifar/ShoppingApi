@@ -11,7 +11,7 @@ using System.Reflection.Metadata.Ecma335;
 namespace Shopping.Controllers
 {
     [ApiController]
-    //[Authorize]
+    [Authorize]
     [ApiVersion(1)] //declare the controller supported version 
     [ApiVersion(2)] //declare the controller supported  version
     [Route("api/v{version:ApiVersion}/categories")]

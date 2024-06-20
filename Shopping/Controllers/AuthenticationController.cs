@@ -52,7 +52,7 @@ namespace Shopping.Controllers
                 _config["Authentication:Audience"], 
                 claims,
                 DateTime.UtcNow, //if we want that it will be a future toke
-                DateTime.UtcNow.AddDays(1), //the expired time
+                DateTime.UtcNow.AddMinutes(1), //the expired time
                 signingCredentials
                 );
 

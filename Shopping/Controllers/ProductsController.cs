@@ -36,7 +36,16 @@ namespace Shopping.Controllers
             //var log = HttpContext.RequestServices.GetService(typeof(ILogger<ProductsController>)); // anothe way to use the services without the DI (if not availible)            
         }
 
+        /// <summary>
+        /// Retrieves the products for aspecific category
+        /// </summary>
+        /// <param name="categoryID">the categoty ID</param>
+        /// <returns>list of products DTO</returns>
+        /// <response code="200">the list of products succsfully return</response>
+        /// <response code="404">the category not found</response>
+        /// <response code="404">the category not found</response>
         [HttpGet]
+        [ProducesResponseType(StatusCodes.Status404NotFound)] //add the response as option in the swaggr documentation
         public async Task<ActionResult<IEnumerable<ProductDTO>>> GetProducts(int categoryID)
         {
             //var products = MyDataStore.Current.Categories.FirstOrDefault(c => c.ID == categoryID)?.Products;

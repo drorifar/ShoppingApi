@@ -1,16 +1,24 @@
 
+using Asp.Versioning;
+using Asp.Versioning.ApiExplorer;
+using Microsoft.AspNetCore.Builder;
+using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc.ApiExplorer;
 using Microsoft.AspNetCore.StaticFiles;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
+using Microsoft.OpenApi.Models;
 using Serilog;
 using Shopping.Context;
 using Shopping.Repositories;
 using Shopping.services;
+using System.Reflection;
 
 namespace Shopping
 {
     public class Program
     {
+        private static ApiVersion API_DEFAULT_VERSION = new ApiVersion(1, 0);
         public static void Main(string[] args)
         {
             var builder = WebApplication.CreateBuilder(args);
@@ -32,7 +40,12 @@ namespace Shopping
                 // options.ReturnHttpNotAcceptable = true; //remark cause it return an error in the swagger (need to change to application/json everytime)
             })
                 .AddNewtonsoftJson() // we add the newtonSoft json for workinf with the jsonPatch
-                .AddXmlDataContractSerializerFormatters(); // we add the option to get the response as XML (for legacy programs)
+                .AddXmlDataContractSerializerFormatters() // we add the option to get the response as XML (for legacy programs)
+            .AddMvcOptions(o => //set the swagger default media type
+            {
+                o.Filters.Add(new ProducesAttribute("application/json"));
+                o.Filters.Add(new ConsumesAttribute("application/json"));
+            });
 
             // we add a costume problem details that will add to the problem message (401,500...)
             builder.Services.AddProblemDetails(options =>
@@ -47,7 +60,8 @@ namespace Shopping
             //builder.Services.AddControllers(); // we add in the begining
             // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
             builder.Services.AddEndpointsApiExplorer();
-            builder.Services.AddSwaggerGen();
+
+
 
 
             builder.Services.AddSingleton<FileExtensionContentTypeProvider>(); //add a singletone service for fileType auto detect
@@ -105,7 +119,54 @@ namespace Shopping
                 o.ReportApiVersions = true;
                 o.DefaultApiVersion = new Asp.Versioning.ApiVersion(1, 0); //this is the default version
                 o.AssumeDefaultVersionWhenUnspecified = true; // if not specified a specific version than use the default version - if it false the client need to send the version he want
-            }).AddMvc();
+            }).AddMvc().
+            AddApiExplorer(o =>
+            {
+                o.SubstituteApiVersionInUrl = true;
+            });
+
+            IApiVersionDescriptionProvider apiVersionProvider = builder.Services
+                .BuildServiceProvider()
+                .GetRequiredService<IApiVersionDescriptionProvider>();
+
+            builder.Services.AddSwaggerGen(o =>
+            {
+                // for adding the versioning to the swagger documantation
+                foreach (var description in apiVersionProvider.ApiVersionDescriptions)
+                {
+                    o.SwaggerDoc(description.GroupName, new OpenApiInfo()
+                    {
+                        Title = "My Shop API",
+                        Description = "a shop api for ui client",
+                        Version = description.ApiVersion.ToString()
+                    });
+                }
+
+                string fileName = $"{Assembly.GetExecutingAssembly().GetName().Name}.xml";
+                string docPath = Path.Combine(AppContext.BaseDirectory, fileName);
+                o.IncludeXmlComments(docPath);
+
+                o.AddSecurityDefinition("MyShopSecurity", new OpenApiSecurityScheme()
+                {
+                    Type = SecuritySchemeType.Http,
+                    Scheme = "Bearer",
+                    Description = "enter a valid token"
+                });
+
+                o.AddSecurityRequirement(new() {
+                {
+                    new()
+                    {
+                        Reference = new OpenApiReference
+                        {
+                             Type = ReferenceType.SecurityScheme,
+                             Id = "MyShopSecurity"
+                        }
+                    },
+                    new List<string>()
+                    }
+                });
+            });
 
             var app = builder.Build();
 
@@ -124,7 +185,20 @@ namespace Shopping
             if (app.Environment.IsDevelopment())
             {
                 app.UseSwagger();
-                app.UseSwaggerUI();
+                app.UseSwaggerUI(o =>
+                {
+                    // for adding the versioning to the swagger documantation
+                    var description = app.DescribeApiVersions();
+                    o.SwaggerEndpoint($"/swagger/{API_DEFAULT_VERSION}/swagger.json", API_DEFAULT_VERSION.ToString()); //set a default version in the swagger
+
+                    foreach (var desc in description)
+                    {
+                        if (desc.GroupName != API_DEFAULT_VERSION.ToString())
+                        {
+                            o.SwaggerEndpoint($"/swagger/{desc.GroupName}/swagger.json", desc.GroupName);
+                        }
+                    }
+                });
             }
 
             app.UseHttpsRedirection();

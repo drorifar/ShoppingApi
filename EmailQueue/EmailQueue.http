@@ -1,0 +1,6 @@
+@EmailQueue_HostAddress = http://localhost:5235
+
+GET {{EmailQueue_HostAddress}}/weatherforecast/
+Accept: application/json
+
+###

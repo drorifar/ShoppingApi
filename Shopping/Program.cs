@@ -58,9 +58,17 @@ namespace Shopping
             builder.Services.AddTransient<IMailService, ProductionMailService>(); //add the production mail service we created to the dependency injection flow  
 #endif
 
-            builder.Services.AddDbContext<MyDBContext>(options =>
-            options.UseSqlite(builder.Configuration["ConnectionString:Main"])); // add the DBContext to the injection flow + call to it constructor (base ctor) with the configuration
-            //.UseSqlite("Data Source=MyShop.db"));
+            if (builder.Configuration["Database:Source"] == "MS-SQL")
+            {
+                builder.Services.AddDbContext<MyDBContext>(options =>
+                    options.UseSqlServer(builder.Configuration["ConnectionString:MS-SQL"]));
+            }
+            else
+            {
+                builder.Services.AddDbContext<MyDBContext>(options =>
+                options.UseSqlite(builder.Configuration["ConnectionString:Main"])); // add the DBContext to the injection flow + call to it constructor (base ctor) with the configuration
+                //.UseSqlite("Data Source=MyShop.db"));
+            }
 
             builder.Services.AddScoped<ICategoryRepository, CategoryRepository>(); //add the repository to the injection engine (scope)
             builder.Services.AddScoped<IProductRepository, ProductRepository>();
@@ -91,6 +99,8 @@ namespace Shopping
                     policy.RequireClaim("auth_level", "9"); // check the claims wanted key and value 
                 });
             });
+
+           
 
             var app = builder.Build();
 

@@ -1,4 +1,5 @@
-﻿using AutoMapper;
+﻿using Asp.Versioning;
+using AutoMapper;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Shopping.Models;
@@ -10,8 +11,10 @@ using System.Reflection.Metadata.Ecma335;
 namespace Shopping.Controllers
 {
     [ApiController]
-    [Authorize]
-    [Route("api/categories")]
+    //[Authorize]
+    [ApiVersion(1)] //declare the controller supported version 
+    [ApiVersion(2)] //declare the controller supported  version
+    [Route("api/v{version:ApiVersion}/categories")]
     public class CategoriesController(ILogger<CategoriesController> _logger, 
         IMailService _mailService,
         ICategoryRepository _repo,

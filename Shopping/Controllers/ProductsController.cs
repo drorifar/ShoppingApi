@@ -1,4 +1,5 @@
-﻿using AutoMapper;
+﻿using Asp.Versioning;
+using AutoMapper;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Components.Forms;
 using Microsoft.AspNetCore.JsonPatch;
@@ -15,7 +16,8 @@ using System.Text.Json;
 namespace Shopping.Controllers
 {
     [ApiController]
-    [Authorize]
+    //[Authorize]
+    [ApiVersion(1)] //declare the controller version
     [Route("api/categories/{categoryID}/products")]
     public class ProductsController : ControllerBase
     {

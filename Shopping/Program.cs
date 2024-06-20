@@ -100,7 +100,12 @@ namespace Shopping
                 });
             });
 
-           
+            builder.Services.AddApiVersioning(o => // add the versionning service
+            {
+                o.ReportApiVersions = true;
+                o.DefaultApiVersion = new Asp.Versioning.ApiVersion(1, 0); //this is the default version
+                o.AssumeDefaultVersionWhenUnspecified = true; // if not specified a specific version than use the default version - if it false the client need to send the version he want
+            }).AddMvc();
 
             var app = builder.Build();
 
